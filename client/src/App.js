@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import NATIONAL_PARKS_DATA from "./data/test_data.json";
 import { Map } from "react-map-gl";
