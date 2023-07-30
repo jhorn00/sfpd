@@ -1,6 +1,6 @@
 import "./App.css";
 import React from "react";
-import MapSF from "./components/MapSF"
+import MapSF from "./components/MapSF";
 
 function App() {
   return (

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Map } from "react-map-gl";
-import DeckGL, { GeoJsonLayer } from "deck.gl";
+import DeckGL, { GeoJsonLayer } from "deck.gl/typed";
 import axios from "axios";
 import NATIONAL_PARKS_DATA from "../data/test_data.json";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -26,7 +26,7 @@ function MapSF() {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [dataPoints, setDataPoints] = useState([]);
 
-  const onClick = (info) => {
+  const onClick = (info: any) => {
     if (info.object) {
       alert(info.object.properties.Name);
     }
@@ -42,10 +42,18 @@ function MapSF() {
       pointRadiusMinPixels: 5,
       pointRadiusScale: 2000,
       getPointRadius: (f) => 0.04, // TODO: Make radius scale with view in some capacity
-      getFillColor: (data) =>
-        data.properties.Name.includes("National Park")
-          ? [0, 0, 0, 250]
-          : [86, 144, 58, 250],
+      getFillColor: (data) => {
+        // Check if data.properties exists and has a valid Name property
+        if (
+          data.properties &&
+          data.properties.Name &&
+          data.properties.Name.includes("National Park")
+        ) {
+          return [0, 0, 0, 250];
+        } else {
+          return [86, 144, 58, 250];
+        }
+      },
       pickable: true,
       autoHighlight: true,
       onClick,
@@ -70,7 +78,7 @@ function MapSF() {
       });
   }
 
-  const handleViewStateChange = (e) => {
+  const handleViewStateChange = (e: any) => {
     const { viewState } = e;
     const [minLng, minLat] = BOUNDS[0];
     const [maxLng, maxLat] = BOUNDS[1];
