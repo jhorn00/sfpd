@@ -1,3 +1,8 @@
+export interface DataPoint {
+    latitude: number;
+    longitude: number;
+}
+
 export interface MapOption {
     label: string;
     value: string;

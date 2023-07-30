@@ -5,7 +5,7 @@ import axios from "axios";
 import NATIONAL_PARKS_DATA from "../data/test_data.json";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Menu from "./Menu/Menu";
-import { MenuProps } from "./types";
+import { DataPoint, MenuProps } from "./types";
 
 function MapSF() {
   // Map component constants
@@ -29,10 +29,12 @@ function MapSF() {
   // State variables
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view - defined initial val
   const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style - defined initial val
-  const [dataPoints, setDataPoints] = useState([]); // data points - empty list
+  const [dataPoints, setDataPoints] = useState(Array<DataPoint>()); // data points - empty list
   const [queryLimit, setQueryLimit] = useState(1000); // socrata query response limit - default to responsive value of 1000
-  const [startDate, setStartDate] = useState(new Date("2018-01-01")); // start date - earliest year in sfpd dataset
+  const [startDate, setStartDate] = useState(new Date("2018-01-31")); // start date - earliest year in sfpd dataset
   const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
+
+  // TODO: fix the date timezones!
 
   // Menu map style options
   const mapOptions = [
@@ -71,6 +73,11 @@ function MapSF() {
     setQueryLimit(queryLimit);
   };
 
+  const hasCoordinates = (item: any) => {
+    // TODO: define this type as what fields could possibly exist in an incident
+    return item.hasOwnProperty("latitude") && item.hasOwnProperty("longitude");
+  };
+
   // Data point onClick
   const onClick = (info: any) => {
     if (info.object) {
@@ -83,7 +90,7 @@ function MapSF() {
   const layers = [
     new GeoJsonLayer({
       id: "nationalParks",
-      data: NATIONAL_PARKS_DATA, // TODO: Stop using static data
+      data: dataPoints, // TODO: Stop using static data
       // Styles
       filled: true,
       pointRadiusMinPixels: 5,
@@ -128,7 +135,29 @@ function MapSF() {
       .then((response) => {
         const data = response.data;
         console.log(data);
-        setDataPoints(data);
+
+        // Filter data to include only items with valid coordinates (latitude and longitude properties)
+        const validCoordinatesData = data.filter(hasCoordinates);
+
+        // Convert the response data to GeoJSON objects
+        const geoJsonData = validCoordinatesData.map((item: any) => ({
+          // TODO: Define a type for the results
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [
+              parseFloat(item.longitude),
+              parseFloat(item.latitude),
+            ],
+          },
+          properties: item, // You can assign the whole item object as properties or choose specific properties here
+        }));
+        console.log(geoJsonData);
+
+        console.log(NATIONAL_PARKS_DATA);
+
+        setDataPoints(geoJsonData);
+        // setDataPoints(data);
       })
       .catch((error) => {
         console.error("Error: ", error);
