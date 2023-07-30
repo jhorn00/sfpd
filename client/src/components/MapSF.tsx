@@ -5,6 +5,7 @@ import axios from "axios";
 import NATIONAL_PARKS_DATA from "../data/test_data.json";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Menu from "./Menu/Menu";
+import { MenuProps } from "./types";
 
 function MapSF() {
   // Map component constants
@@ -26,9 +27,11 @@ function MapSF() {
   const MIN_ZOOM = 10;
 
   // State variables
-  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view
-  const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style
-  const [dataPoints, setDataPoints] = useState([]); // data points
+  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view - defined initial val
+  const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style - defined initial val
+  const [dataPoints, setDataPoints] = useState([]); // data points - empty list
+  const [startDate, setStartDate] = useState(new Date("2018-01-01")); // start date - earliest year in sfpd dataset
+  const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
 
   // Menu map style options
   const mapOptions = [
@@ -40,6 +43,22 @@ function MapSF() {
   const handleMapStyleChange = (selectedMapStyle: string) => {
     const baseStyle: string = "mapbox://styles/mapbox/";
     setMapStyle(baseStyle + selectedMapStyle);
+  };
+
+  // Function to handle changes in start date
+  const handleStartDateChange = (startDate: Date | null) => {
+    // TODO: consider additional date checking
+    if (startDate) {
+      setStartDate(startDate);
+    }
+  };
+
+  // Function to handle changes in end date
+  const handleEndDateChange = (endDate: Date | null) => {
+    // TODO: consider additional date checking
+    if (endDate) {
+      setEndDate(endDate);
+    }
   };
 
   // Data point onClick
@@ -118,13 +137,19 @@ function MapSF() {
     setViewState(boundedViewState);
   };
 
+  const menuProps: MenuProps = {
+    mapOptions: mapOptions,
+    mapStyle: mapStyle,
+    onMapStyleChange: handleMapStyleChange,
+    startDate: startDate,
+    onStartDateChange: handleStartDateChange,
+    endDate: endDate,
+    onEndDateChange: handleEndDateChange,
+  };
+
   return (
     <>
-      <Menu
-        mapOptions={mapOptions}
-        mapStyle={mapStyle}
-        onMapStyleChange={handleMapStyleChange}
-      />
+      <Menu {...menuProps} />
       <DeckGL
         viewState={viewState}
         onViewStateChange={handleViewStateChange}
