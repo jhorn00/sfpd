@@ -17,8 +17,13 @@ function MapSF() {
     bearing: 0,
     pitch: 0
   };
+  const BOUNDS = [
+    [-122.531297, 37.673972], // Southwest coordinates
+    [-122.331297, 37.873972] // Northeast coordinates
+  ];
   const SOCRATA_SFPD_DATA = "https://data.sfgov.org/resource/wg3w-h783.json";
 
+  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [dataPoints, setDataPoints] = useState([]);
 
   const onClick = info => {
@@ -62,9 +67,25 @@ function MapSF() {
       });
   }
 
+  const handleViewStateChange = (e) => {
+    const { viewState } = e;
+    const [minLng, minLat] = BOUNDS[0];
+    const [maxLng, maxLat] = BOUNDS[1];
+
+    // Restrict latitude and longitude within bounds
+    const boundedViewState = {
+      ...viewState,
+      latitude: Math.min(Math.max(viewState.latitude, minLat), maxLat),
+      longitude: Math.min(Math.max(viewState.longitude, minLng), maxLng)
+    };
+
+    setViewState(boundedViewState);
+  };
+
   return (
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        viewState={viewState}
+        onViewStateChange={handleViewStateChange}
         controller={true}
         layers={layers}
       >
