@@ -7,10 +7,11 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import Menu from "./Menu/Menu";
 
 function MapSF() {
+  // Map component constants
   const SOCRATA_ACCESS_TOKEN = process.env.REACT_APP_SOCRATA_ACCESS_TOKEN;
+  const SOCRATA_SFPD_DATA = "https://data.sfgov.org/resource/wg3w-h783.json";
   const MAPBOX_ACCESS_TOKEN = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
   const INITIAL_MAP_STYLE = "mapbox://styles/mapbox/streets-v12";
-  // const MAP_STYLE = "mapbox://styles/mapbox/satellite-streets-v12";
   const INITIAL_VIEW_STATE = {
     latitude: 37.773972,
     longitude: -122.431297,
@@ -23,28 +24,25 @@ function MapSF() {
     [-122.331297, 37.873972], // Northeast coordinates
   ];
   const MIN_ZOOM = 10;
-  const SOCRATA_SFPD_DATA = "https://data.sfgov.org/resource/wg3w-h783.json";
 
-  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-  const [dataPoints, setDataPoints] = useState([]);
+  // State variables
+  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view
+  const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style
+  const [dataPoints, setDataPoints] = useState([]); // data points
 
-  // State variables for menu options
-  const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE);
-
-  // Menu options and their values
+  // Menu map style options
   const mapOptions = [
     { label: "Streets", value: "streets-v12" },
     { label: "Satellite", value: "satellite-streets-v12" },
-    // Add more options here if needed
   ];
 
-  // Function to handle menu selection
+  // Function to handle changes in map style
   const handleMapStyleChange = (selectedMapStyle: string) => {
     const baseStyle: string = "mapbox://styles/mapbox/";
-    console.log(selectedMapStyle);
     setMapStyle(baseStyle + selectedMapStyle);
   };
 
+  // Data point onClick
   const onClick = (info: any) => {
     if (info.object) {
       alert(info.object.properties.Name);
@@ -52,10 +50,11 @@ function MapSF() {
     makeSocrataCall(); // TODO: relocate this
   };
 
+  // Map layer properties
   const layers = [
     new GeoJsonLayer({
       id: "nationalParks",
-      data: NATIONAL_PARKS_DATA, // TODO: Stop using fake data
+      data: NATIONAL_PARKS_DATA, // TODO: Stop using static data
       // Styles
       filled: true,
       pointRadiusMinPixels: 5,
@@ -79,12 +78,18 @@ function MapSF() {
     }),
   ];
 
+  // Socrata datapoint request
   async function makeSocrataCall() {
+    const startDate = "2022-07-01T00:00:00.000";
+    const endDate = "2022-07-15T23:59:59.999";
     await axios
       .get(SOCRATA_SFPD_DATA, {
         params: {
           $$app_token: SOCRATA_ACCESS_TOKEN,
           incident_code: "07041",
+          // $where: `incident_date between '${startDate}' and '${endDate}'`,
+          // $where: `incident_date = 2022-05-03T00:00:00.000`,
+          $where: `incident_date >= '${startDate}' AND incident_date <= '${endDate}'`,
         },
       })
       .then((response) => {
