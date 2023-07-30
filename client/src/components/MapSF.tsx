@@ -4,11 +4,12 @@ import DeckGL, { GeoJsonLayer } from "deck.gl/typed";
 import axios from "axios";
 import NATIONAL_PARKS_DATA from "../data/test_data.json";
 import "mapbox-gl/dist/mapbox-gl.css";
+import Menu from "./Menu/Menu";
 
 function MapSF() {
   const SOCRATA_ACCESS_TOKEN = process.env.REACT_APP_SOCRATA_ACCESS_TOKEN;
   const MAPBOX_ACCESS_TOKEN = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
-  const MAP_STYLE = "mapbox://styles/mapbox/streets-v12";
+  const INITIAL_MAP_STYLE = "mapbox://styles/mapbox/streets-v12";
   // const MAP_STYLE = "mapbox://styles/mapbox/satellite-streets-v12";
   const INITIAL_VIEW_STATE = {
     latitude: 37.773972,
@@ -26,6 +27,23 @@ function MapSF() {
 
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [dataPoints, setDataPoints] = useState([]);
+
+  // State variables for menu options
+  const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE);
+
+  // Menu options and their values
+  const mapOptions = [
+    { label: "Streets", value: "streets-v12" },
+    { label: "Satellite", value: "satellite-streets-v12" },
+    // Add more options here if needed
+  ];
+
+  // Function to handle menu selection
+  const handleMapStyleChange = (selectedMapStyle: string) => {
+    const baseStyle: string = "mapbox://styles/mapbox/";
+    console.log(selectedMapStyle);
+    setMapStyle(baseStyle + selectedMapStyle);
+  };
 
   const onClick = (info: any) => {
     if (info.object) {
@@ -96,14 +114,21 @@ function MapSF() {
   };
 
   return (
-    <DeckGL
-      viewState={viewState}
-      onViewStateChange={handleViewStateChange}
-      controller={true}
-      layers={layers}
-    >
-      <Map mapStyle={MAP_STYLE} mapboxAccessToken={MAPBOX_ACCESS_TOKEN}></Map>
-    </DeckGL>
+    <>
+      <Menu
+        mapOptions={mapOptions}
+        mapStyle={mapStyle}
+        onMapStyleChange={handleMapStyleChange}
+      />
+      <DeckGL
+        viewState={viewState}
+        onViewStateChange={handleViewStateChange}
+        controller={true}
+        layers={layers}
+      >
+        <Map mapStyle={mapStyle} mapboxAccessToken={MAPBOX_ACCESS_TOKEN}></Map>
+      </DeckGL>
+    </>
   );
 }
 
