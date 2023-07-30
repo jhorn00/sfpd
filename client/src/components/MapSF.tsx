@@ -30,6 +30,7 @@ function MapSF() {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view - defined initial val
   const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style - defined initial val
   const [dataPoints, setDataPoints] = useState([]); // data points - empty list
+  const [queryLimit, setQueryLimit] = useState(1000); // socrata query response limit - default to responsive value of 1000
   const [startDate, setStartDate] = useState(new Date("2018-01-01")); // start date - earliest year in sfpd dataset
   const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
 
@@ -48,6 +49,7 @@ function MapSF() {
   // Function to handle changes in start date
   const handleStartDateChange = (startDate: Date | null) => {
     // TODO: consider additional date checking
+    console.log(startDate);
     if (startDate) {
       setStartDate(startDate);
     }
@@ -55,10 +57,16 @@ function MapSF() {
 
   // Function to handle changes in end date
   const handleEndDateChange = (endDate: Date | null) => {
+    console.log(endDate);
     // TODO: consider additional date checking
     if (endDate) {
       setEndDate(endDate);
     }
+  };
+
+  // Function to handle changes in query limit changes
+  const handleQueryLimitChange = (queryLimit: number) => {
+    setQueryLimit(queryLimit);
   };
 
   // Data point onClick
@@ -99,16 +107,20 @@ function MapSF() {
 
   // Socrata datapoint request
   async function makeSocrataCall() {
-    const startDate = "2022-07-01T00:00:00.000";
-    const endDate = "2022-07-15T23:59:59.999";
+    // Query requires ISO format
+    let startDateISO = startDate.toISOString();
+    let endDateISO = endDate.toISOString();
+    // Query requires no timezone
+    startDateISO = startDateISO.slice(0, -1);
+    endDateISO = endDateISO.slice(0, -1);
+    // Request data
     await axios
       .get(SOCRATA_SFPD_DATA, {
         params: {
           $$app_token: SOCRATA_ACCESS_TOKEN,
-          incident_code: "07041",
-          // $where: `incident_date between '${startDate}' and '${endDate}'`,
-          // $where: `incident_date = 2022-05-03T00:00:00.000`,
-          $where: `incident_date >= '${startDate}' AND incident_date <= '${endDate}'`,
+          $limit: queryLimit,
+          // incident_code: "07041",
+          $where: `incident_date >= '${startDateISO}' AND incident_date <= '${endDateISO}'`,
         },
       })
       .then((response) => {
@@ -145,6 +157,8 @@ function MapSF() {
     onStartDateChange: handleStartDateChange,
     endDate: endDate,
     onEndDateChange: handleEndDateChange,
+    queryLimit: queryLimit,
+    onQueryLimitChange: handleQueryLimitChange,
   };
 
   return (

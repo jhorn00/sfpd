@@ -3,6 +3,7 @@ import "./Menu.css";
 import { MenuProps } from "../types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import ReactSlider from "react-slider";
 
 function Menu(props: MenuProps) {
   const {
@@ -13,6 +14,8 @@ function Menu(props: MenuProps) {
     onStartDateChange,
     endDate,
     onEndDateChange,
+    queryLimit,
+    onQueryLimitChange,
   } = props;
   return (
     <div className="menu-container">
@@ -39,6 +42,29 @@ function Menu(props: MenuProps) {
         <DatePicker
           selected={endDate}
           onChange={(date) => onEndDateChange(date)}
+        />
+      </div>
+      <div className="slider-container">
+        <span>
+          <label>Max Incidents:</label>
+          <input
+            type="number"
+            value={queryLimit}
+            onChange={(e) => onQueryLimitChange(+e.target.value)} // Parse the input string to a number
+            min={1}
+            max={1000000}
+            step={1}
+          />
+        </span>
+        <ReactSlider
+          className="slider"
+          thumbClassName="slider-thumb"
+          trackClassName="slider-track"
+          value={queryLimit}
+          min={1}
+          max={1000000}
+          step={1}
+          onChange={(value) => onQueryLimitChange(value)}
         />
       </div>
     </div>

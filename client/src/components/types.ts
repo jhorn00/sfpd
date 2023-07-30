@@ -11,4 +11,6 @@ export interface MenuProps {
     onStartDateChange: (startDate: Date | null) => void;
     endDate: Date;
     onEndDateChange: (endDate: Date | null) => void;
+    queryLimit: number;
+    onQueryLimitChange: (queryLimit: number) => void;
 }
