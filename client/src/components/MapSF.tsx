@@ -21,6 +21,7 @@ function MapSF() {
     [-122.531297, 37.673972], // Southwest coordinates
     [-122.331297, 37.873972], // Northeast coordinates
   ];
+  const MIN_ZOOM = 10;
   const SOCRATA_SFPD_DATA = "https://data.sfgov.org/resource/wg3w-h783.json";
 
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
@@ -83,11 +84,12 @@ function MapSF() {
     const [minLng, minLat] = BOUNDS[0];
     const [maxLng, maxLat] = BOUNDS[1];
 
-    // Restrict latitude and longitude within bounds
+    // Restrict lat, lng, zoom
     const boundedViewState = {
       ...viewState,
       latitude: Math.min(Math.max(viewState.latitude, minLat), maxLat),
       longitude: Math.min(Math.max(viewState.longitude, minLng), maxLng),
+      zoom: Math.max(viewState.zoom, MIN_ZOOM),
     };
 
     setViewState(boundedViewState);
