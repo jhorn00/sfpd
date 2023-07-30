@@ -16,10 +16,11 @@ function Menu(props: MenuProps) {
     onEndDateChange,
     queryLimit,
     onQueryLimitChange,
+    onUpdateData,
   } = props;
   return (
     <div className="menu-container">
-      <div className="map-style">
+      <div className="map-style-container">
         <label htmlFor="map-style-select">Map Style:</label>
         <select
           id="map-style-select"
@@ -32,17 +33,19 @@ function Menu(props: MenuProps) {
           ))}
         </select>
       </div>
-      <div className="start-date">
-        <DatePicker
-          selected={startDate}
-          onChange={(date) => onStartDateChange(date)}
-        />
-      </div>
-      <div className="end-date">
-        <DatePicker
-          selected={endDate}
-          onChange={(date) => onEndDateChange(date)}
-        />
+      <div className="date-container">
+        <div className="start-date">
+          <DatePicker
+            selected={startDate}
+            onChange={(date) => onStartDateChange(date)}
+          />
+        </div>
+        <div className="end-date">
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => onEndDateChange(date)}
+          />
+        </div>
       </div>
       <div className="slider-container">
         <span>
@@ -67,6 +70,9 @@ function Menu(props: MenuProps) {
           onChange={(value) => onQueryLimitChange(value)}
         />
       </div>
+      <button className="update-button" onClick={onUpdateData}>
+        Update
+      </button>
     </div>
   );
 }

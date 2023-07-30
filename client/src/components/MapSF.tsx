@@ -12,7 +12,7 @@ function MapSF() {
   const SOCRATA_ACCESS_TOKEN = process.env.REACT_APP_SOCRATA_ACCESS_TOKEN;
   const SOCRATA_SFPD_DATA = "https://data.sfgov.org/resource/wg3w-h783.json";
   const MAPBOX_ACCESS_TOKEN = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
-  const INITIAL_MAP_STYLE = "mapbox://styles/mapbox/streets-v12";
+  const INITIAL_MAP_STYLE = "mapbox://styles/mapbox/dark-v11";
   const INITIAL_VIEW_STATE = {
     latitude: 37.773972,
     longitude: -122.431297,
@@ -36,6 +36,8 @@ function MapSF() {
 
   // Menu map style options
   const mapOptions = [
+    { label: "Dark", value: "dark-v11" },
+    { label: "Light", value: "light-v11" },
     { label: "Streets", value: "streets-v12" },
     { label: "Satellite", value: "satellite-streets-v12" },
   ];
@@ -72,9 +74,9 @@ function MapSF() {
   // Data point onClick
   const onClick = (info: any) => {
     if (info.object) {
-      alert(info.object.properties.Name);
+      alert(info.object.properties.Name); // TODO: remove this
     }
-    makeSocrataCall(); // TODO: relocate this
+    // TODO: popup code here?
   };
 
   // Map layer properties
@@ -149,6 +151,7 @@ function MapSF() {
     setViewState(boundedViewState);
   };
 
+  // Properties for the map context menu
   const menuProps: MenuProps = {
     mapOptions: mapOptions,
     mapStyle: mapStyle,
@@ -159,6 +162,7 @@ function MapSF() {
     onEndDateChange: handleEndDateChange,
     queryLimit: queryLimit,
     onQueryLimitChange: handleQueryLimitChange,
+    onUpdateData: makeSocrataCall,
   };
 
   return (

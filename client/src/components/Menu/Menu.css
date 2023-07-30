@@ -8,10 +8,25 @@
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.map-style-container {
+  margin-bottom: 10px;
+}
+
+.date-container {
+  margin-bottom: 10px;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
   
 label {
   font-weight: bold;
-  margin-right: 4px;
+  margin-right: 8px;
 }
 
 select {
@@ -33,13 +48,6 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
-.slider-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 8px;
-}
-
 /* Basic styles for the slider element */
 .slider {
   width: 100%;
@@ -53,14 +61,54 @@ select:focus {
   width: 10px;
   height: 10px;
   margin-top: -2px;
-  background-color: #007bff;
+  background-color: #0095ff;
   border-radius: 50%;
   cursor: pointer;
-  border: 1px solid #007bff;
+  border: 1px solid #0095ff;
 }
 
 .slider-track {
   height: 8px;
   background-color: #f1f1f1;
   border-radius: 4px;
+}
+
+.update-button {
+  background-color: #0095ff;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  box-shadow: rgba(255, 255, 255, .4) 0 1px 0 0 inset;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI","Liberation Sans",sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.15385;
+  margin: 0;
+  outline: none;
+  padding: 8px .8em;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.update-button:hover,
+.update-button:focus {
+  background-color: #07c;
+}
+
+.update-button:focus {
+  box-shadow: 0 0 0 4px rgba(0, 149, 255, .15);
+}
+
+.update-button:active {
+  background-color: #0064bd;
+  box-shadow: none;
 }
