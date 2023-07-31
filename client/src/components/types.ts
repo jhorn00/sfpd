@@ -1,6 +1,48 @@
+import { Point } from "react-map-gl";
+
 export interface DataPoint {
     latitude: number;
     longitude: number;
+}
+
+// Incident data in order from csv export
+// Not technically necessary but just wanted to more clearly define incident fields
+export interface IncidentType {
+    incident_datetime: string;
+    incident_date: string;
+    incident_time: string;
+    incident_year: string;
+    incident_day_of_week: string;
+    report_datetime: string;
+    row_id: string;
+    incident_id: string;
+    incident_number: string;
+    cad_number?: string;
+    report_type_code: string;
+    report_type_description: string;
+    filed_online?: boolean; // will be true, if exists
+    incident_code: string;
+    incident_category: string;
+    incident_subcategory: string;
+    incident_description: string;
+    resolution: string;
+    intersection?: string;
+    cnn?: string;
+    police_district: string;
+    analysis_neighborhood?: string;
+    supervisor_district?: string;
+    supervisor_district_2012?: string;
+    latitude?: string;
+    longitude?: string;
+    point?: Point;
+    neighborhoods?: string;
+    // ESNCAG - Boundary File
+    // Central Market/Tenderloin Boundary Polygon - Updated
+    // Civic Center Harm Reduction Project Boundary
+    // HSOC Zones as of 2018-06-05
+    // Invest In Neighborhoods (IIN) Areas
+    current_supervisor_districts?: string;
+    current_police_districts?: string;
 }
 
 export interface MapOption {
