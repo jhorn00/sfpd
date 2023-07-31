@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Map } from "react-map-gl";
 import DeckGL, { GeoJsonLayer } from "deck.gl/typed";
 import axios from "axios";
@@ -24,7 +24,8 @@ function MapSF() {
     [-122.531297, 37.673972], // Southwest coordinates
     [-122.331297, 37.873972], // Northeast coordinates
   ];
-  const MIN_ZOOM = 10;
+  const MIN_ZOOM = 10; // Min zoom set by me
+  const MAX_ZOOM = 20; // Max zoom as defined by mapbox
 
   // State variables
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view - defined initial val
@@ -86,6 +87,24 @@ function MapSF() {
     // TODO: popup code here?
   };
 
+  // TODO: Define a second scale for different zoom levels
+  const [pointRadius, setPointRadius] = useState<number>(0.4);
+  const MIN_POINT_RADIUS = 0.003;
+  const MAX_POINT_RADIUS = 0.05;
+  useEffect(() => {
+    let newPointRadius: number = MIN_POINT_RADIUS;
+    const zoom = viewState.zoom;
+    console.log(zoom);
+    const zoomRange = MAX_ZOOM - MIN_ZOOM; // The old range
+    if (zoomRange !== 0) {
+      const pointRadiusRange = MAX_POINT_RADIUS - MIN_POINT_RADIUS; // The new range
+      newPointRadius =
+        ((MAX_ZOOM - zoom) * pointRadiusRange) / zoomRange + MIN_POINT_RADIUS;
+      console.log(newPointRadius);
+    }
+    setPointRadius(newPointRadius);
+  }, [viewState]);
+
   // Map layer properties
   const layers = [
     new GeoJsonLayer({
@@ -95,9 +114,9 @@ function MapSF() {
       filled: true,
       pointRadiusMinPixels: 5,
       pointRadiusScale: 2000,
-      getPointRadius: (f) => 0.04, // TODO: Make radius scale with view in some capacity
+      getPointRadius: pointRadius, // TODO: Make radius scale with view in some capacity
       getFillColor: (data) => {
-        // Check if data.properties exists and has a valid Name property
+        // TODO: Considerations for color (i.e. incident type)
         if (
           data.properties &&
           data.properties.Name &&
