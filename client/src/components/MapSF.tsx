@@ -4,7 +4,13 @@ import DeckGL, { GeoJsonLayer } from "deck.gl/typed";
 import axios from "axios";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Menu from "./Menu/Menu";
-import { IncidentMap, GeoJsonPoint, IncidentType, MenuProps } from "./types";
+import {
+  IncidentMap,
+  GeoJsonPoint,
+  IncidentType,
+  MenuProps,
+  IncidentCategoryMap,
+} from "./types";
 import {
   SOCRATA_ACCESS_TOKEN,
   SOCRATA_SFPD_DATA,
@@ -18,7 +24,11 @@ import {
   MIN_POINT_RADIUS,
   MAX_POINT_RADIUS,
 } from "./constants";
-import { populateIncidentList, populateIncidentMap } from "./utils";
+import {
+  populateIncidentCategoryMap,
+  populateIncidentList,
+  populateIncidentMap,
+} from "./utils";
 
 function MapSF() {
   // State variables
@@ -27,9 +37,18 @@ function MapSF() {
   const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style - defined initial val
   const [dataPoints, setDataPoints] = useState(Array<GeoJsonPoint>()); // data points - empty list
   const [hoveredObject, setHoveredObject] = useState<any | null>(null); // hovered datapoint object on map
-  const [incidentMap, setIncidentMap] = useState(new window.Map());
+  const [incidentMap, setIncidentMap] = useState<IncidentMap>(new window.Map());
   // Query options
   const [queryLimit, setQueryLimit] = useState(1000); // socrata query response limit - default to responsive value of 1000
+  // Query results
+  const [totalIncidents, setTotalIncidents] = useState(Array<IncidentType>());
+  const [totalGeoJsonPoints, setTotalGeoJsonPoints] = useState(
+    Array<GeoJsonPoint>()
+  );
+  // Menu
+  const [incidentCategoryMap, setIncidentCategoryMap] =
+    useState<IncidentCategoryMap>(new window.Map());
+  // Misc/Other
   const [startDate, setStartDate] = useState(new Date("2018-01-31")); // start date - earliest year in sfpd dataset
   const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
 
@@ -64,6 +83,14 @@ function MapSF() {
     setQueryLimit(queryLimit);
   };
 
+  // Function to handle changes in query limit changes
+  const handleIncidentCategoriesChange = (
+    incidentCategories: IncidentCategoryMap
+  ) => {
+    setIncidentCategoryMap(incidentCategories);
+    console.log(incidentCategories);
+  };
+
   // Data point onClick
   const onClick = (info: any) => {
     if (info.object) {
@@ -85,6 +112,34 @@ function MapSF() {
       setHoveredObject(null);
     }
   };
+
+  // Watch for changes to incidentCategoryMap and update visible datapoints
+  useEffect(() => {
+    // Get the current selected categories
+    const selectedCategories: string[] = [];
+    incidentCategoryMap.forEach((value, key) => {
+      if (value) {
+        selectedCategories.push(key);
+      }
+    });
+    console.log(selectedCategories);
+
+    // Grab only the datapoints in the selected field
+    const newDataPoints: GeoJsonPoint[] = [];
+    console.log(totalGeoJsonPoints);
+    totalGeoJsonPoints.forEach((geoJsonPoint) => {
+      if (
+        selectedCategories.includes(geoJsonPoint.properties.incident_category)
+      ) {
+        newDataPoints.push(geoJsonPoint);
+      }
+    });
+    console.log(newDataPoints);
+
+    setDataPoints(newDataPoints);
+
+    // You can add more logic and actions here based on incidentCategoryMap changes.
+  }, [incidentCategoryMap, totalGeoJsonPoints]);
 
   // TODO: Define a second scale for different zoom levels
   const [pointRadius, setPointRadius] = useState<number>(0.4);
@@ -184,22 +239,43 @@ function MapSF() {
         },
       })
       .then((response) => {
+        if (!Array.isArray(response.data)) {
+          console.error(
+            "Received empty data or non-array response from Socrata API"
+          );
+          alert(
+            "Socrata API unable to process such a large incident request at the moment. Please try something smaller."
+          );
+          return; // Skip the rest of the function
+        }
         const data = response.data;
         console.log(data);
 
         // Populate IncidentType list
-        const incidents = populateIncidentList(data); // TODO: Use this for analysis or remove it
+        const newTotalIncidents = populateIncidentList(data); // Update query results
+        setTotalIncidents(newTotalIncidents);
         console.log(
-          "Identified " + incidents.length.toString() + " mappable incidents."
+          "Identified " +
+            totalIncidents.length.toString() +
+            " mappable totalIncidents."
         );
 
         // Update incidentMap
-        const newIncidentMap: IncidentMap = populateIncidentMap(incidents);
+        const newIncidentMap: IncidentMap =
+          populateIncidentMap(newTotalIncidents); // use local object because state might not be updated
         setIncidentMap(newIncidentMap);
-        console.log(incidentMap);
+        console.log(newIncidentMap);
+
+        // Update incidentCategoryList menu options
+        const incidentCategoryStrings = Array.from(newIncidentMap.keys()); // use local object because state might not be updated
+        const newIncidentCategoryMap: IncidentCategoryMap =
+          populateIncidentCategoryMap(incidentCategoryStrings);
+        setIncidentCategoryMap(newIncidentCategoryMap);
+        console.log(newIncidentCategoryMap);
 
         // Convert the response data to GeoJSON objects
-        const geoJsonData: GeoJsonPoint[] = incidents.map(
+        // use local object because state might not be updated
+        const newTotalGeoJsonPoints: GeoJsonPoint[] = newTotalIncidents.map(
           (incident: IncidentType) => ({
             type: "Feature",
             geometry: {
@@ -209,8 +285,10 @@ function MapSF() {
             properties: incident,
           })
         );
+        setTotalGeoJsonPoints(newTotalGeoJsonPoints); // use local object because state might not be updated
+        console.log(newTotalGeoJsonPoints);
 
-        setDataPoints(geoJsonData);
+        setDataPoints(newTotalGeoJsonPoints); // use local object because state might not be updated
       })
       .catch((error) => {
         console.error("Error: ", error);
@@ -244,6 +322,8 @@ function MapSF() {
     onEndDateChange: handleEndDateChange,
     queryLimit: queryLimit,
     onQueryLimitChange: handleQueryLimitChange,
+    incidentCategories: incidentCategoryMap,
+    onIncidentCategoriesChange: handleIncidentCategoriesChange,
     onUpdateData: makeSocrataCall,
   };
 

@@ -16,8 +16,17 @@ function Menu(props: MenuProps) {
     onEndDateChange,
     queryLimit,
     onQueryLimitChange,
+    incidentCategories,
+    onIncidentCategoriesChange,
     onUpdateData,
   } = props;
+
+  const handleCategoryCheckboxChange = (categoryLabel: string) => {
+    const updatedCategories = new Map(incidentCategories);
+    updatedCategories.set(categoryLabel, !updatedCategories.get(categoryLabel));
+    onIncidentCategoriesChange(updatedCategories);
+  };
+
   return (
     <div className="menu-container">
       <div className="map-style-container">
@@ -69,6 +78,23 @@ function Menu(props: MenuProps) {
           step={1}
           onChange={(value) => onQueryLimitChange(value)}
         />
+      </div>
+      <div className="incident-categories-container">
+        <label>Incident Categories:</label>
+        <div className="incident-categories-list">
+          {Array.from(incidentCategories.keys()).map((categoryLabel) => (
+            <label key={categoryLabel}>
+              <input
+                type="checkbox"
+                checked={incidentCategories.get(categoryLabel)}
+                onChange={() => handleCategoryCheckboxChange(categoryLabel)}
+              />
+              {categoryLabel.length > 22 // Limit the number of characters
+                ? `${categoryLabel.substring(0, 22)}...` // Truncate and add ellipsis
+                : categoryLabel}
+            </label>
+          ))}
+        </div>
       </div>
       <button className="update-button" onClick={onUpdateData}>
         Update

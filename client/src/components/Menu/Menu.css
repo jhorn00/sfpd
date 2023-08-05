@@ -23,6 +23,12 @@
   align-items: center;
   margin-bottom: 10px;
 }
+
+.incident-categories-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
   
 label {
   font-weight: bold;
@@ -71,6 +77,15 @@ select:focus {
   height: 8px;
   background-color: #f1f1f1;
   border-radius: 4px;
+}
+
+.incident-categories-list {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
 }
 
 .update-button {

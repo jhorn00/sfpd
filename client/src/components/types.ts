@@ -55,6 +55,8 @@ export interface MapStyleOption {
     label: string;
     value: string;
 }
+
+export type IncidentCategoryMap = Map<string, boolean>;
   
 export interface MenuProps {
     mapStyleOptions: MapStyleOption[];
@@ -66,5 +68,7 @@ export interface MenuProps {
     onEndDateChange: (endDate: Date | null) => void;
     queryLimit: number;
     onQueryLimitChange: (queryLimit: number) => void;
+    incidentCategories: IncidentCategoryMap;
+    onIncidentCategoriesChange: (incidentCategories: IncidentCategoryMap) => void;
     onUpdateData: () => void;
 }

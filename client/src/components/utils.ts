@@ -1,4 +1,4 @@
-import { IncidentMap, IncidentType } from "./types";
+import { IncidentCategoryMap, IncidentMap, IncidentType } from "./types";
 
 export function populateIncidentList(data: any[]): IncidentType[] {
     const validCoordinatesData = data.filter(
@@ -26,8 +26,8 @@ export function populateIncidentList(data: any[]): IncidentType[] {
           report_type_description,
           filed_online = false,
           incident_code,
-          incident_category,
-          incident_subcategory,
+          incident_category = "Unknown",
+          incident_subcategory = "Unknown",
           incident_description,
           resolution,
           intersection = "",
@@ -99,4 +99,14 @@ export function populateIncidentMap(incidents: IncidentType[]) {
         }
     });
     return incidentMap;
+}
+
+export function populateIncidentCategoryMap(incidentCategoryStrings: string[]) {
+    const incidentCategoryMap: IncidentCategoryMap = new window.Map();
+    incidentCategoryStrings.forEach((key) => {
+        if (!incidentCategoryMap.has(key)) {
+            incidentCategoryMap.set(key, false);
+        }
+    });
+    return incidentCategoryMap;
 }
