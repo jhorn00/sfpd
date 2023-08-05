@@ -6,27 +6,20 @@ import NATIONAL_PARKS_DATA from "../data/test_data.json";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Menu from "./Menu/Menu";
 import { DataPoint, MenuProps } from "./types";
+import {
+  SOCRATA_ACCESS_TOKEN,
+  SOCRATA_SFPD_DATA,
+  MAPBOX_ACCESS_TOKEN,
+  INITIAL_MAP_STYLE,
+  INITIAL_VIEW_STATE,
+  BOUNDS,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  MIN_POINT_RADIUS,
+  MAX_POINT_RADIUS,
+} from "./constants";
 
 function MapSF() {
-  // Map component constants
-  const SOCRATA_ACCESS_TOKEN = process.env.REACT_APP_SOCRATA_ACCESS_TOKEN;
-  const SOCRATA_SFPD_DATA = "https://data.sfgov.org/resource/wg3w-h783.json";
-  const MAPBOX_ACCESS_TOKEN = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
-  const INITIAL_MAP_STYLE = "mapbox://styles/mapbox/dark-v11";
-  const INITIAL_VIEW_STATE = {
-    latitude: 37.773972,
-    longitude: -122.431297,
-    zoom: 12,
-    bearing: 0,
-    pitch: 0,
-  };
-  const BOUNDS = [
-    [-122.531297, 37.673972], // Southwest coordinates
-    [-122.331297, 37.873972], // Northeast coordinates
-  ];
-  const MIN_ZOOM = 10; // Min zoom set by me
-  const MAX_ZOOM = 20; // Max zoom as defined by mapbox
-
   // State variables
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view - defined initial val
   const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style - defined initial val
@@ -89,8 +82,6 @@ function MapSF() {
 
   // TODO: Define a second scale for different zoom levels
   const [pointRadius, setPointRadius] = useState<number>(0.4);
-  const MIN_POINT_RADIUS = 0.003;
-  const MAX_POINT_RADIUS = 0.05;
   useEffect(() => {
     let newPointRadius: number = MIN_POINT_RADIUS;
     const zoom = viewState.zoom;
