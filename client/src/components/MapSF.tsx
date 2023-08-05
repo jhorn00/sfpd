@@ -118,6 +118,7 @@ function MapSF() {
       getPointRadius: pointRadius,
       getFillColor: (data) => {
         if (!data.properties || !data.properties.incident_category) {
+          // TODO: more categories
           return [0, 0, 0, 0]; // Default color for null properties
         }
         if (data.properties.incident_category.toLowerCase().includes("theft")) {
