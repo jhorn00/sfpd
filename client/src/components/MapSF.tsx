@@ -4,12 +4,13 @@ import DeckGL, { GeoJsonLayer } from "deck.gl/typed";
 import axios from "axios";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Menu from "./Menu/Menu";
-import { GeoJsonPoint, IncidentType, MenuProps } from "./types";
+import { IncidentMap, GeoJsonPoint, IncidentType, MenuProps } from "./types";
 import {
   SOCRATA_ACCESS_TOKEN,
   SOCRATA_SFPD_DATA,
   MAPBOX_ACCESS_TOKEN,
   INITIAL_MAP_STYLE,
+  MAP_STYLE_OPTIONS,
   INITIAL_VIEW_STATE,
   BOUNDS,
   MIN_ZOOM,
@@ -17,27 +18,22 @@ import {
   MIN_POINT_RADIUS,
   MAX_POINT_RADIUS,
 } from "./constants";
-import { mapIncidents } from "./utils";
+import { populateIncidentList, populateIncidentMap } from "./utils";
 
 function MapSF() {
   // State variables
+  // Map states
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view - defined initial val
   const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style - defined initial val
   const [dataPoints, setDataPoints] = useState(Array<GeoJsonPoint>()); // data points - empty list
+  const [hoveredObject, setHoveredObject] = useState<any | null>(null); // hovered datapoint object on map
+  const [incidentMap, setIncidentMap] = useState(new window.Map());
+  // Query options
   const [queryLimit, setQueryLimit] = useState(1000); // socrata query response limit - default to responsive value of 1000
   const [startDate, setStartDate] = useState(new Date("2018-01-31")); // start date - earliest year in sfpd dataset
   const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
-  const [hoveredObject, setHoveredObject] = useState<any | null>(null); // hovered datapoint object on map
 
   // TODO: fix the date timezones!
-
-  // Menu map style options
-  const mapOptions = [
-    { label: "Dark", value: "dark-v11" },
-    { label: "Light", value: "light-v11" },
-    { label: "Streets", value: "streets-v12" },
-    { label: "Satellite", value: "satellite-streets-v12" },
-  ];
 
   // Function to handle changes in map style
   const handleMapStyleChange = (selectedMapStyle: string) => {
@@ -117,22 +113,49 @@ function MapSF() {
       pointRadiusScale: 2000,
       getPointRadius: pointRadius,
       getFillColor: (data) => {
-        if (!data.properties || !data.properties.incident_category) {
-          // TODO: more categories
+        if (
+          !data.properties ||
+          !data.properties.incident_category ||
+          !(typeof data.properties.incident_category === "string")
+        ) {
           return [0, 0, 0, 0]; // Default color for null properties
         }
-        if (data.properties.incident_category.toLowerCase().includes("theft")) {
-          return [50, 50, 100, 250]; // Bluish color for Theft
-        } else if (
-          data.properties.incident_category.toLowerCase().includes("assault")
-        ) {
-          return [100, 50, 50, 250]; // Reddish color for Assault
-        } else if (
-          data.properties.incident_category.toLowerCase().includes("rape")
-        ) {
-          return [148, 0, 211, 250]; // Purple color for Rape
-        } else {
-          return [86, 144, 58, 250]; // Default color for other categories
+        const category = data.properties.incident_category.toLowerCase();
+        switch (category) {
+          case "larceny theft":
+            return [50, 50, 150, 250]; // Adjusted bluish color for Theft
+          case "assault":
+            return [150, 30, 30, 250]; // Dark red for Assault
+          case "rape":
+            return [120, 50, 180, 250]; // Deep purple for Rape
+          case "lost property":
+            return [130, 130, 130, 250]; // Gray for Lost Property
+          case "non-criminal":
+            return [200, 200, 200, 250]; // Light gray for Non-Criminal
+          case "drug violation":
+            return [180, 150, 50, 250]; // Gold for Drug Violation
+          case "warrant":
+            return [90, 120, 150, 250]; // Blueish gray for Warrant
+          case "recovered vehicle":
+            return [60, 180, 60, 250]; // Green for Recovered Vehicle
+          case "malicious mischief":
+            return [180, 100, 60, 250]; // Orange for Malicious Mischief
+          case "fraud":
+            return [220, 180, 50, 250]; // Yellow for Fraud
+          case "stolen property":
+            return [160, 130, 190, 250]; // Light purple for Stolen Property
+          case "motor vehicle theft":
+            return [60, 150, 180, 250]; // Teal for Motor Vehicle Theft
+          case "traffic collision":
+            return [220, 150, 150, 250]; // Light red for Traffic Collision
+          case "robbery":
+            return [100, 70, 40, 250]; // Brown for Robbery
+          case "missing person":
+            return [200, 200, 200, 250]; // Light gray for Missing Person
+          case "disorderly conduct":
+            return [150, 150, 30, 250]; // Dark yellow for Disorderly Conduct
+          default:
+            return [86, 144, 58, 250]; // Default color for other categories
         }
       },
       pickable: true,
@@ -164,8 +187,16 @@ function MapSF() {
         const data = response.data;
         console.log(data);
 
-        // Populate IncidentType
-        const incidents = mapIncidents(data); // TODO: Use this for analysis or remove it
+        // Populate IncidentType list
+        const incidents = populateIncidentList(data); // TODO: Use this for analysis or remove it
+        console.log(
+          "Identified " + incidents.length.toString() + " mappable incidents."
+        );
+
+        // Update incidentMap
+        const newIncidentMap: IncidentMap = populateIncidentMap(incidents);
+        setIncidentMap(newIncidentMap);
+        console.log(incidentMap);
 
         // Convert the response data to GeoJSON objects
         const geoJsonData: GeoJsonPoint[] = incidents.map(
@@ -204,7 +235,7 @@ function MapSF() {
 
   // Properties for the map context menu
   const menuProps: MenuProps = {
-    mapOptions: mapOptions,
+    mapStyleOptions: MAP_STYLE_OPTIONS,
     mapStyle: mapStyle,
     onMapStyleChange: handleMapStyleChange,
     startDate: startDate,

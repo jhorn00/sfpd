@@ -1,6 +1,6 @@
-import { IncidentType } from "./types";
+import { IncidentMap, IncidentType } from "./types";
 
-export function mapIncidents(data: any[]): IncidentType[] {
+export function populateIncidentList(data: any[]): IncidentType[] {
     const validCoordinatesData = data.filter(
       (item: any) =>
         item.hasOwnProperty("latitude") &&
@@ -88,3 +88,15 @@ export function mapIncidents(data: any[]): IncidentType[] {
       .filter((incident: IncidentType | null) => incident !== null) as IncidentType[];
 }
   
+export function populateIncidentMap(incidents: IncidentType[]) {
+    const incidentMap: IncidentMap = new window.Map();
+    incidents.forEach((incident) => {
+        const key = incident.incident_category;
+        if (incidentMap.has(key)) {
+          incidentMap.get(key)?.push(incident);
+        } else {
+          incidentMap.set(key, []);
+        }
+    });
+    return incidentMap;
+}

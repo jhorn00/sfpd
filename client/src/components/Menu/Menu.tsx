@@ -7,7 +7,7 @@ import ReactSlider from "react-slider";
 
 function Menu(props: MenuProps) {
   const {
-    mapOptions,
+    mapStyleOptions,
     mapStyle,
     onMapStyleChange,
     startDate,
@@ -26,7 +26,7 @@ function Menu(props: MenuProps) {
           id="map-style-select"
           onChange={(e) => onMapStyleChange(e.target.value)}
         >
-          {mapOptions.map((option) => (
+          {mapStyleOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>

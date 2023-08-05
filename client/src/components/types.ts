@@ -1,5 +1,7 @@
 import { Point } from "react-map-gl";
 
+export type IncidentMap = Map<string, IncidentType[]>;
+
 export interface GeoJsonPoint {
     type: "Feature";
     geometry: {
@@ -49,13 +51,13 @@ export interface IncidentType {
     current_police_districts?: string;
 }
 
-export interface MapOption {
+export interface MapStyleOption {
     label: string;
     value: string;
 }
   
 export interface MenuProps {
-    mapOptions: MapOption[];
+    mapStyleOptions: MapStyleOption[];
     mapStyle: string;
     onMapStyleChange: (mapStyle: string) => void;
     startDate: Date;
