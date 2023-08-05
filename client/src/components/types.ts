@@ -1,9 +1,13 @@
 import { Point } from "react-map-gl";
 
-export interface DataPoint {
-    latitude: number;
-    longitude: number;
-}
+export interface GeoJsonPoint {
+    type: "Feature";
+    geometry: {
+      type: "Point";
+      coordinates: [number, number]; // [longitude, latitude]
+    };
+    properties: IncidentType;
+}  
 
 // Incident data in order from csv export
 // Not technically necessary but just wanted to more clearly define incident fields
@@ -32,8 +36,8 @@ export interface IncidentType {
     analysis_neighborhood?: string;
     supervisor_district?: string;
     supervisor_district_2012?: string;
-    latitude?: string;
-    longitude?: string;
+    latitude: number;
+    longitude: number;
     point?: Point;
     neighborhoods?: string;
     // ESNCAG - Boundary File

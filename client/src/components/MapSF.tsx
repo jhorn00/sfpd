@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { Map } from "react-map-gl";
 import DeckGL, { GeoJsonLayer } from "deck.gl/typed";
 import axios from "axios";
-import NATIONAL_PARKS_DATA from "../data/test_data.json";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Menu from "./Menu/Menu";
-import { DataPoint, MenuProps } from "./types";
+import { GeoJsonPoint, IncidentType, MenuProps } from "./types";
 import {
   SOCRATA_ACCESS_TOKEN,
   SOCRATA_SFPD_DATA,
@@ -18,15 +17,17 @@ import {
   MIN_POINT_RADIUS,
   MAX_POINT_RADIUS,
 } from "./constants";
+import { mapIncidents } from "./utils";
 
 function MapSF() {
   // State variables
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE); // map view - defined initial val
   const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style - defined initial val
-  const [dataPoints, setDataPoints] = useState(Array<DataPoint>()); // data points - empty list
+  const [dataPoints, setDataPoints] = useState(Array<GeoJsonPoint>()); // data points - empty list
   const [queryLimit, setQueryLimit] = useState(1000); // socrata query response limit - default to responsive value of 1000
   const [startDate, setStartDate] = useState(new Date("2018-01-31")); // start date - earliest year in sfpd dataset
   const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
+  const [hoveredObject, setHoveredObject] = useState<any | null>(null); // hovered datapoint object on map
 
   // TODO: fix the date timezones!
 
@@ -67,11 +68,6 @@ function MapSF() {
     setQueryLimit(queryLimit);
   };
 
-  const hasCoordinates = (item: any) => {
-    // TODO: define this type as what fields could possibly exist in an incident
-    return item.hasOwnProperty("latitude") && item.hasOwnProperty("longitude");
-  };
-
   // Data point onClick
   const onClick = (info: any) => {
     if (info.object) {
@@ -80,18 +76,32 @@ function MapSF() {
     // TODO: popup code here?
   };
 
+  // Data point onHover
+  const onHover = (info: any) => {
+    // TODO: Change variable name
+    if (info.object) {
+      setHoveredObject({
+        ...info.object,
+        x: info.x,
+        y: info.y,
+      });
+    } else {
+      setHoveredObject(null);
+    }
+  };
+
   // TODO: Define a second scale for different zoom levels
   const [pointRadius, setPointRadius] = useState<number>(0.4);
   useEffect(() => {
     let newPointRadius: number = MIN_POINT_RADIUS;
     const zoom = viewState.zoom;
-    console.log(zoom);
+    // console.log(zoom);
     const zoomRange = MAX_ZOOM - MIN_ZOOM; // The old range
     if (zoomRange !== 0) {
       const pointRadiusRange = MAX_POINT_RADIUS - MIN_POINT_RADIUS; // The new range
       newPointRadius =
         ((MAX_ZOOM - zoom) * pointRadiusRange) / zoomRange + MIN_POINT_RADIUS;
-      console.log(newPointRadius);
+      // console.log(newPointRadius);
     }
     setPointRadius(newPointRadius);
   }, [viewState]);
@@ -99,28 +109,35 @@ function MapSF() {
   // Map layer properties
   const layers = [
     new GeoJsonLayer({
-      id: "nationalParks",
-      data: dataPoints, // TODO: Stop using static data
+      id: "dataPoints",
+      data: dataPoints,
       // Styles
       filled: true,
       pointRadiusMinPixels: 5,
       pointRadiusScale: 2000,
-      getPointRadius: pointRadius, // TODO: Make radius scale with view in some capacity
+      getPointRadius: pointRadius,
       getFillColor: (data) => {
-        // TODO: Considerations for color (i.e. incident type)
-        if (
-          data.properties &&
-          data.properties.Name &&
-          data.properties.Name.includes("National Park")
+        if (!data.properties || !data.properties.incident_category) {
+          return [0, 0, 0, 0]; // Default color for null properties
+        }
+        if (data.properties.incident_category.toLowerCase().includes("theft")) {
+          return [50, 50, 100, 250]; // Bluish color for Theft
+        } else if (
+          data.properties.incident_category.toLowerCase().includes("assault")
         ) {
-          return [0, 0, 0, 250];
+          return [100, 50, 50, 250]; // Reddish color for Assault
+        } else if (
+          data.properties.incident_category.toLowerCase().includes("rape")
+        ) {
+          return [148, 0, 211, 250]; // Purple color for Rape
         } else {
-          return [86, 144, 58, 250];
+          return [86, 144, 58, 250]; // Default color for other categories
         }
       },
       pickable: true,
       autoHighlight: true,
       onClick,
+      onHover,
     }),
   ];
 
@@ -146,28 +163,22 @@ function MapSF() {
         const data = response.data;
         console.log(data);
 
-        // Filter data to include only items with valid coordinates (latitude and longitude properties)
-        const validCoordinatesData = data.filter(hasCoordinates);
+        // Populate IncidentType
+        const incidents = mapIncidents(data); // TODO: Use this for analysis or remove it
 
         // Convert the response data to GeoJSON objects
-        const geoJsonData = validCoordinatesData.map((item: any) => ({
-          // TODO: Define a type for the results
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: [
-              parseFloat(item.longitude),
-              parseFloat(item.latitude),
-            ],
-          },
-          properties: item, // You can assign the whole item object as properties or choose specific properties here
-        }));
-        console.log(geoJsonData);
-
-        console.log(NATIONAL_PARKS_DATA);
+        const geoJsonData: GeoJsonPoint[] = incidents.map(
+          (incident: IncidentType) => ({
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [incident.longitude, incident.latitude],
+            },
+            properties: incident,
+          })
+        );
 
         setDataPoints(geoJsonData);
-        // setDataPoints(data);
       })
       .catch((error) => {
         console.error("Error: ", error);
@@ -212,9 +223,32 @@ function MapSF() {
         onViewStateChange={handleViewStateChange}
         controller={true}
         layers={layers}
+        onHover={onHover}
       >
         <Map mapStyle={mapStyle} mapboxAccessToken={MAPBOX_ACCESS_TOKEN}></Map>
       </DeckGL>
+      {hoveredObject && (
+        <div
+          style={{
+            position: "fixed",
+            zIndex: 1,
+            pointerEvents: "none",
+            left: hoveredObject.x,
+            top: hoveredObject.y,
+            backgroundColor: "#d3d3d3",
+            padding: "8px",
+            borderRadius: "4px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <div>
+            <h3>{hoveredObject.properties.incident_description}</h3>
+            <p>Latitude: {hoveredObject.geometry.coordinates[1]}</p>
+            <p>Longitude: {hoveredObject.geometry.coordinates[0]}</p>
+          </div>
+          {hoveredObject.properties.Name}
+        </div>
+      )}
     </>
   );
 }
