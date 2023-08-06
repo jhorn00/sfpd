@@ -12,6 +12,12 @@ mapboxgl.workerClass =
 
 export type IncidentMap = Map<string, IncidentType[]>;
 
+export interface BarGraphFields {
+    title: string;
+    dates: Array<string>;
+    occurrances: Array<number>;
+}
+
 export interface GeoJsonPoint {
     type: "Feature";
     geometry: {
@@ -19,7 +25,7 @@ export interface GeoJsonPoint {
       coordinates: [number, number]; // [longitude, latitude]
     };
     properties: IncidentType;
-}  
+}
 
 // Incident data in order from csv export
 // Not technically necessary but just wanted to more clearly define incident fields
@@ -80,5 +86,6 @@ export interface MenuProps {
     onQueryLimitChange: (queryLimit: number) => void;
     incidentCategories: IncidentCategoryMap;
     onIncidentCategoriesChange: (incidentCategories: IncidentCategoryMap) => void;
+    dataPoints: GeoJsonPoint[];
     onUpdateData: () => void;
 }

@@ -26,6 +26,7 @@ import {
 } from "./constants";
 import {
   adjustDate,
+  generateBarGraphFields,
   getColorCode,
   populateIncidentCategoryMap,
   populateIncidentList,
@@ -61,7 +62,8 @@ function MapSF() {
   const [incidentCategoryMap, setIncidentCategoryMap] =
     useState<IncidentCategoryMap>(new window.Map());
   // Misc/Other
-  const [startDate, setStartDate] = useState(adjustDate("2018-1-01")); // start date - earliest year in sfpd dataset
+  const initialDate = new Date(adjustDate("2018-1-01")); // TODO: stop adjustDate from being called repeatedly on state changes
+  const [startDate, setStartDate] = useState(initialDate); // start date - earliest year in sfpd dataset
   const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
 
   // TODO: fix the date timezones!
@@ -298,6 +300,7 @@ function MapSF() {
     onQueryLimitChange: handleQueryLimitChange,
     incidentCategories: incidentCategoryMap,
     onIncidentCategoriesChange: handleIncidentCategoriesChange,
+    dataPoints: dataPoints,
     onUpdateData: makeSocrataCall,
   };
 

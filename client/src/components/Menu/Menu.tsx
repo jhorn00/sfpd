@@ -4,6 +4,7 @@ import { MenuProps } from "../types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReactSlider from "react-slider";
+import Insights from "../Insights/Insights";
 
 function Menu(props: MenuProps) {
   const {
@@ -18,6 +19,7 @@ function Menu(props: MenuProps) {
     onQueryLimitChange,
     incidentCategories,
     onIncidentCategoriesChange,
+    dataPoints,
     onUpdateData,
   } = props;
 
@@ -98,6 +100,7 @@ function Menu(props: MenuProps) {
             ))}
         </div>
       </div>
+      <Insights dataPoints={dataPoints} />
       <button className="update-button" onClick={onUpdateData}>
         Update
       </button>

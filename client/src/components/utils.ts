@@ -1,4 +1,4 @@
-import { IncidentCategoryMap, IncidentMap, IncidentType } from "./types";
+import { BarGraphFields, GeoJsonPoint, IncidentCategoryMap, IncidentMap, IncidentType } from "./types";
 
 export function adjustDate(targetDate: string): Date {
     const originalDate = new Date(targetDate);
@@ -8,6 +8,52 @@ export function adjustDate(targetDate: string): Date {
     );
     console.log(localDate);
     return localDate;
+}
+
+export function generateBarGraphFields(dataPoints: GeoJsonPoint[]): BarGraphFields {
+    // Handle empty list
+    if (dataPoints.length === 0){
+        return {
+            title: "No Insight",
+            dates: [],
+            occurrances: []
+        };
+    }
+    // Make sure points are sorted by date (shallow copy to avoid updating state)
+    const sortedDataPoints = dataPoints.slice().sort((a, b) => a.properties.incident_date.localeCompare(b.properties.incident_date));
+    // Result variables
+    let title = sortedDataPoints[0].properties.incident_category;
+    const dates = Array<string>();
+    const occurrances = Array<number>();
+    // First element
+    let previousDate = sortedDataPoints[0].properties.incident_date;
+    dates.push(previousDate);
+    occurrances.push(1);
+    for (let i = 1; i < sortedDataPoints.length; i++){
+        const currentDataPoint = sortedDataPoints[i];
+        // Same date as previous
+        if (currentDataPoint.properties.incident_date === previousDate) {
+            // Update the count
+            occurrances[occurrances.length - 1]++;
+            // Make sure Label catches mutitple categories
+            // Just put it in here so it happens a little less frequently
+            if (currentDataPoint.properties.incident_category !== title) {
+                title = "Incidents";
+            }
+        }
+        // New date
+        else{
+            // Set the date we are looking for and update lists
+            previousDate = currentDataPoint.properties.incident_date;
+            dates.push(previousDate);
+            occurrances.push(1);
+        }
+    }
+    return {
+        title: title,
+        dates: dates,
+        occurrances: occurrances
+    }
 }
 
 export function populateIncidentList(data: any[]): IncidentType[] {
