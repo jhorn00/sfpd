@@ -25,6 +25,7 @@ import {
   MAX_POINT_RADIUS,
 } from "./constants";
 import {
+  adjustDate,
   getColorCode,
   populateIncidentCategoryMap,
   populateIncidentList,
@@ -60,7 +61,7 @@ function MapSF() {
   const [incidentCategoryMap, setIncidentCategoryMap] =
     useState<IncidentCategoryMap>(new window.Map());
   // Misc/Other
-  const [startDate, setStartDate] = useState(new Date("2018-01-31")); // start date - earliest year in sfpd dataset
+  const [startDate, setStartDate] = useState(adjustDate("2018-1-01")); // start date - earliest year in sfpd dataset
   const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
 
   // TODO: fix the date timezones!
@@ -74,7 +75,6 @@ function MapSF() {
   // Function to handle changes in start date
   const handleStartDateChange = (startDate: Date | null) => {
     // TODO: consider additional date checking
-    console.log(startDate);
     if (startDate) {
       setStartDate(startDate);
     }
@@ -82,7 +82,6 @@ function MapSF() {
 
   // Function to handle changes in end date
   const handleEndDateChange = (endDate: Date | null) => {
-    console.log(endDate);
     // TODO: consider additional date checking
     if (endDate) {
       setEndDate(endDate);

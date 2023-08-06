@@ -1,5 +1,15 @@
 import { IncidentCategoryMap, IncidentMap, IncidentType } from "./types";
 
+export function adjustDate(targetDate: string): Date {
+    const originalDate = new Date(targetDate);
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const localDate = new Date(
+        originalDate.toLocaleString("en-US", { timeZone: timezone })
+    );
+    console.log(localDate);
+    return localDate;
+}
+
 export function populateIncidentList(data: any[]): IncidentType[] {
     const validCoordinatesData = data.filter(
       (item: any) =>
