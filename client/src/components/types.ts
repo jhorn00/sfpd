@@ -1,5 +1,15 @@
 import { Point } from "react-map-gl";
 
+///// Added the following lines to correct transpiler issues with mapbox v2. /////
+import mapboxgl from "mapbox-gl";
+
+// The following is required to stop "npm build" from transpiling mapbox code.
+// notice the exclamation point in the import.
+// @ts-ignore
+mapboxgl.workerClass =
+  require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default; // eslint-disable-line import/no-webpack-loader-syntax, import/no-unresolved
+////////////////////////////////////////////////////////////////////////////////////
+
 export type IncidentMap = Map<string, IncidentType[]>;
 
 export interface GeoJsonPoint {
