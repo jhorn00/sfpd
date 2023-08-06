@@ -82,18 +82,20 @@ function Menu(props: MenuProps) {
       <div className="incident-categories-container">
         <label>Incident Categories:</label>
         <div className="incident-categories-list">
-          {Array.from(incidentCategories.keys()).map((categoryLabel) => (
-            <label key={categoryLabel}>
-              <input
-                type="checkbox"
-                checked={incidentCategories.get(categoryLabel)}
-                onChange={() => handleCategoryCheckboxChange(categoryLabel)}
-              />
-              {categoryLabel.length > 22 // Limit the number of characters
-                ? `${categoryLabel.substring(0, 22)}...` // Truncate and add ellipsis
-                : categoryLabel}
-            </label>
-          ))}
+          {Array.from(incidentCategories.keys())
+            .sort()
+            .map((categoryLabel) => (
+              <label key={categoryLabel}>
+                <input
+                  type="checkbox"
+                  checked={incidentCategories.get(categoryLabel)}
+                  onChange={() => handleCategoryCheckboxChange(categoryLabel)}
+                />
+                {categoryLabel.length > 22 // Limit the number of characters
+                  ? `${categoryLabel.substring(0, 22)}...` // Truncate and add ellipsis
+                  : categoryLabel}
+              </label>
+            ))}
         </div>
       </div>
       <button className="update-button" onClick={onUpdateData}>

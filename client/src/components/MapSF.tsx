@@ -25,6 +25,7 @@ import {
   MAX_POINT_RADIUS,
 } from "./constants";
 import {
+  getColorCode,
   populateIncidentCategoryMap,
   populateIncidentList,
   populateIncidentMap,
@@ -185,43 +186,7 @@ function MapSF() {
         ) {
           return [0, 0, 0, 0]; // Default color for null properties
         }
-        const category = data.properties.incident_category.toLowerCase();
-        switch (category) {
-          case "larceny theft":
-            return [50, 50, 150, 250]; // Adjusted bluish color for Theft
-          case "assault":
-            return [150, 30, 30, 250]; // Dark red for Assault
-          case "rape":
-            return [120, 50, 180, 250]; // Deep purple for Rape
-          case "lost property":
-            return [130, 130, 130, 250]; // Gray for Lost Property
-          case "non-criminal":
-            return [200, 200, 200, 250]; // Light gray for Non-Criminal
-          case "drug violation":
-            return [180, 150, 50, 250]; // Gold for Drug Violation
-          case "warrant":
-            return [90, 120, 150, 250]; // Blueish gray for Warrant
-          case "recovered vehicle":
-            return [60, 180, 60, 250]; // Green for Recovered Vehicle
-          case "malicious mischief":
-            return [180, 100, 60, 250]; // Orange for Malicious Mischief
-          case "fraud":
-            return [220, 180, 50, 250]; // Yellow for Fraud
-          case "stolen property":
-            return [160, 130, 190, 250]; // Light purple for Stolen Property
-          case "motor vehicle theft":
-            return [60, 150, 180, 250]; // Teal for Motor Vehicle Theft
-          case "traffic collision":
-            return [220, 150, 150, 250]; // Light red for Traffic Collision
-          case "robbery":
-            return [100, 70, 40, 250]; // Brown for Robbery
-          case "missing person":
-            return [200, 200, 200, 250]; // Light gray for Missing Person
-          case "disorderly conduct":
-            return [150, 150, 30, 250]; // Dark yellow for Disorderly Conduct
-          default:
-            return [86, 144, 58, 250]; // Default color for other categories
-        }
+        return getColorCode(data.properties.incident_category);
       },
       pickable: true,
       autoHighlight: true,
