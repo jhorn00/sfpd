@@ -46,7 +46,7 @@ function MapSF() {
   // Query options
   const [queryLimit, setQueryLimit] = useState(1000); // socrata query response limit - default to responsive value of 1000
   // Query results
-  const [totalIncidents, setTotalIncidents] = useState(Array<IncidentType>());
+  const [totalIncidents, setTotalIncidents] = useState(Array<IncidentType>()); // TODO: make use of this or get rid of it
   const [totalGeoJsonPoints, setTotalGeoJsonPoints] = useState(
     Array<GeoJsonPoint>()
   );
@@ -231,6 +231,7 @@ function MapSF() {
   };
 
   // Properties for the map context menu
+  // TODO: consider actual context
   const menuProps: MenuProps = {
     mapStyleOptions: MAP_STYLE_OPTIONS,
     mapStyle: mapStyle,
