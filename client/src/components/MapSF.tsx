@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Map } from "react-map-gl";
 import DeckGL, { GeoJsonLayer } from "deck.gl/typed";
-import axios from "axios";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Menu from "./Menu/Menu";
+import { debounce } from "lodash";
 import {
   IncidentMap,
   GeoJsonPoint,
@@ -12,8 +12,6 @@ import {
   IncidentCategoryMap,
 } from "./types";
 import {
-  SOCRATA_ACCESS_TOKEN,
-  SOCRATA_SFPD_DATA,
   MAPBOX_ACCESS_TOKEN,
   INITIAL_MAP_STYLE,
   MAP_STYLE_OPTIONS,
@@ -24,14 +22,8 @@ import {
   MIN_POINT_RADIUS,
   MAX_POINT_RADIUS,
 } from "./constants";
-import {
-  adjustDate,
-  generateBarGraphFields,
-  getColorCode,
-  populateIncidentCategoryMap,
-  populateIncidentList,
-  populateIncidentMap,
-} from "./utils";
+import { adjustDate, getColorCode } from "./utils";
+import { makeSocrataCall } from "./api";
 
 ///// Added the following lines to correct transpiler issues with mapbox v2. /////
 import mapboxgl from "mapbox-gl";
@@ -50,7 +42,7 @@ function MapSF() {
   const [mapStyle, setMapStyle] = useState(INITIAL_MAP_STYLE); // map style - defined initial val
   const [dataPoints, setDataPoints] = useState(Array<GeoJsonPoint>()); // data points - empty list
   const [hoveredObject, setHoveredObject] = useState<any | null>(null); // hovered datapoint object on map
-  const [incidentMap, setIncidentMap] = useState<IncidentMap>(new window.Map());
+  const [incidentMap, setIncidentMap] = useState<IncidentMap>(new window.Map()); // TODO: make use of this or get rid of it
   // Query options
   const [queryLimit, setQueryLimit] = useState(1000); // socrata query response limit - default to responsive value of 1000
   // Query results
@@ -100,7 +92,6 @@ function MapSF() {
     incidentCategories: IncidentCategoryMap
   ) => {
     setIncidentCategoryMap(incidentCategories);
-    console.log(incidentCategories);
   };
 
   // Data point onClick
@@ -112,17 +103,24 @@ function MapSF() {
   };
 
   // Data point onHover
+  const debouncedOnHover = useCallback(
+    debounce((info: any) => {
+      if (info.object) {
+        setHoveredObject({
+          ...info.object,
+          x: info.x,
+          y: info.y,
+        });
+      } else {
+        setHoveredObject(null);
+      }
+    }, 10),
+    []
+  );
+
+  // Use the debounced function for the onHover event
   const onHover = (info: any) => {
-    // TODO: Change variable name
-    if (info.object) {
-      setHoveredObject({
-        ...info.object,
-        x: info.x,
-        y: info.y,
-      });
-    } else {
-      setHoveredObject(null);
-    }
+    debouncedOnHover(info);
   };
 
   // Watch for changes to incidentCategoryMap and update visible datapoints
@@ -134,11 +132,9 @@ function MapSF() {
         selectedCategories.push(key);
       }
     });
-    console.log(selectedCategories);
 
     // Grab only the datapoints in the selected field
     const newDataPoints: GeoJsonPoint[] = [];
-    console.log(totalGeoJsonPoints);
     totalGeoJsonPoints.forEach((geoJsonPoint) => {
       if (
         selectedCategories.includes(geoJsonPoint.properties.incident_category)
@@ -146,11 +142,8 @@ function MapSF() {
         newDataPoints.push(geoJsonPoint);
       }
     });
-    console.log(newDataPoints);
 
     setDataPoints(newDataPoints);
-
-    // You can add more logic and actions here based on incidentCategoryMap changes.
   }, [incidentCategoryMap, totalGeoJsonPoints]);
 
   // TODO: Define a second scale for different zoom levels
@@ -167,7 +160,7 @@ function MapSF() {
       // console.log(newPointRadius);
     }
     setPointRadius(newPointRadius);
-  }, [viewState]);
+  }, [viewState.zoom]);
 
   // Map layer properties
   const layers = [
@@ -196,95 +189,47 @@ function MapSF() {
     }),
   ];
 
-  // Socrata datapoint request
-  async function makeSocrataCall() {
-    // Query requires ISO format
-    let startDateISO = startDate.toISOString();
-    let endDateISO = endDate.toISOString();
-    // Query requires no timezone
-    startDateISO = startDateISO.slice(0, -1);
-    endDateISO = endDateISO.slice(0, -1);
-    // Request data
-    await axios
-      .get(SOCRATA_SFPD_DATA, {
-        params: {
-          $$app_token: SOCRATA_ACCESS_TOKEN,
-          $limit: queryLimit,
-          // incident_code: "07041",
-          $where: `incident_date >= '${startDateISO}' AND incident_date <= '${endDateISO}'`,
-        },
-      })
-      .then((response) => {
-        if (!Array.isArray(response.data)) {
-          console.error(
-            "Received empty data or non-array response from Socrata API"
-          );
-          alert(
-            "Socrata API unable to process such a large incident request at the moment. Please try something smaller."
-          );
-          return; // Skip the rest of the function
-        }
-        const data = response.data;
-        console.log(data);
-
-        // Populate IncidentType list
-        const newTotalIncidents = populateIncidentList(data); // Update query results
-        setTotalIncidents(newTotalIncidents);
-        console.log(
-          "Identified " +
-            totalIncidents.length.toString() +
-            " mappable totalIncidents."
-        );
-
-        // Update incidentMap
-        const newIncidentMap: IncidentMap =
-          populateIncidentMap(newTotalIncidents); // use local object because state might not be updated
-        setIncidentMap(newIncidentMap);
-        console.log(newIncidentMap);
-
-        // Update incidentCategoryList menu options
-        const incidentCategoryStrings = Array.from(newIncidentMap.keys()); // use local object because state might not be updated
-        const newIncidentCategoryMap: IncidentCategoryMap =
-          populateIncidentCategoryMap(incidentCategoryStrings);
-        setIncidentCategoryMap(newIncidentCategoryMap);
-        console.log(newIncidentCategoryMap);
-
-        // Convert the response data to GeoJSON objects
-        // use local object because state might not be updated
-        const newTotalGeoJsonPoints: GeoJsonPoint[] = newTotalIncidents.map(
-          (incident: IncidentType) => ({
-            type: "Feature",
-            geometry: {
-              type: "Point",
-              coordinates: [incident.longitude, incident.latitude],
-            },
-            properties: incident,
-          })
-        );
-        setTotalGeoJsonPoints(newTotalGeoJsonPoints); // use local object because state might not be updated
-        console.log(newTotalGeoJsonPoints);
-
-        setDataPoints(newTotalGeoJsonPoints); // use local object because state might not be updated
-      })
-      .catch((error) => {
-        console.error("Error: ", error);
-      });
+  async function fetchData() {
+    const result = await makeSocrataCall(startDate, endDate, queryLimit);
+    if (result) {
+      const {
+        newTotalIncidents,
+        newIncidentMap,
+        newIncidentCategoryMap,
+        newTotalGeoJsonPoints,
+      } = result;
+      console.log("result");
+      // Update state or perform other actions based on the fetched data
+      setTotalIncidents(newTotalIncidents);
+      setIncidentMap(newIncidentMap);
+      setIncidentCategoryMap(newIncidentCategoryMap);
+      setTotalGeoJsonPoints(newTotalGeoJsonPoints);
+      // setDataPoints(newTotalGeoJsonPoints);
+    }
   }
 
+  const debouncedViewStateChange = useCallback(
+    debounce((e: any) => {
+      console.log("handle viewstate change");
+      const { viewState } = e;
+      const [minLng, minLat] = BOUNDS[0];
+      const [maxLng, maxLat] = BOUNDS[1];
+
+      // Restrict lat, lng, zoom
+      const boundedViewState = {
+        ...viewState,
+        latitude: Math.min(Math.max(viewState.latitude, minLat), maxLat),
+        longitude: Math.min(Math.max(viewState.longitude, minLng), maxLng),
+        zoom: Math.max(viewState.zoom, MIN_ZOOM),
+      };
+
+      setViewState(boundedViewState);
+    }, 5),
+    []
+  );
+
   const handleViewStateChange = (e: any) => {
-    const { viewState } = e;
-    const [minLng, minLat] = BOUNDS[0];
-    const [maxLng, maxLat] = BOUNDS[1];
-
-    // Restrict lat, lng, zoom
-    const boundedViewState = {
-      ...viewState,
-      latitude: Math.min(Math.max(viewState.latitude, minLat), maxLat),
-      longitude: Math.min(Math.max(viewState.longitude, minLng), maxLng),
-      zoom: Math.max(viewState.zoom, MIN_ZOOM),
-    };
-
-    setViewState(boundedViewState);
+    debouncedViewStateChange(e);
   };
 
   // Properties for the map context menu
@@ -301,7 +246,7 @@ function MapSF() {
     incidentCategories: incidentCategoryMap,
     onIncidentCategoriesChange: handleIncidentCategoriesChange,
     dataPoints: dataPoints,
-    onUpdateData: makeSocrataCall,
+    onUpdateData: fetchData,
   };
 
   return (

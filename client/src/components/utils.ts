@@ -6,7 +6,6 @@ export function adjustDate(targetDate: string): Date {
     const localDate = new Date(
         originalDate.toLocaleString("en-US", { timeZone: timezone })
     );
-    console.log(localDate);
     return localDate;
 }
 
