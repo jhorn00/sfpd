@@ -209,7 +209,6 @@ function MapSF() {
 
   const debouncedViewStateChange = useCallback(
     debounce((e: any) => {
-      console.log("handle viewstate change");
       const { viewState } = e;
       const [minLng, minLat] = BOUNDS[0];
       const [maxLng, maxLat] = BOUNDS[1];
