@@ -204,7 +204,6 @@ function MapSF() {
       setIncidentMap(newIncidentMap);
       setIncidentCategoryMap(newIncidentCategoryMap);
       setTotalGeoJsonPoints(newTotalGeoJsonPoints);
-      // setDataPoints(newTotalGeoJsonPoints);
     }
   }
 

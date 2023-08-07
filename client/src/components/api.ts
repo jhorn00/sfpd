@@ -71,7 +71,6 @@ export async function makeSocrataCall(
       })
     );
 
-    // setDataPoints(newTotalGeoJsonPoints); // use local object because state might not be updated
     return {
       newTotalIncidents,
       newIncidentMap,
