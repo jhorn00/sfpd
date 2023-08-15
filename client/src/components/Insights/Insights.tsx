@@ -26,7 +26,7 @@ function Insights({ dataPoints }: { dataPoints: GeoJsonPoint[] }) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const barGraphData = generateBarGraphFields(dataPoints); // TODO: I believe when the greater component re-mounts this mounts too
+  const barGraphData = generateBarGraphFields(dataPoints); // TODO: I believe when the parent component re-mounts this mounts too
 
   const data = {
     labels: barGraphData.dates,
