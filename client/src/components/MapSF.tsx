@@ -54,11 +54,9 @@ function MapSF() {
   const [incidentCategoryMap, setIncidentCategoryMap] =
     useState<IncidentCategoryMap>(new window.Map());
   // Misc/Other
-  const initialDate = new Date(adjustDate("2018-1-01")); // TODO: stop adjustDate from being called repeatedly on state changes
+  const initialDate = new Date(adjustDate("2018-1-01")); // TODO: stop adjustDate from being called repeatedly from re-mounts (broke this function call to separate line troubleshooting that issue)
   const [startDate, setStartDate] = useState(initialDate); // start date - earliest year in sfpd dataset
   const [endDate, setEndDate] = useState(new Date()); // end date - current date (dataset is maintained)
-
-  // TODO: fix the date timezones!
 
   // Function to handle changes in map style
   const handleMapStyleChange = (selectedMapStyle: string) => {
@@ -97,12 +95,12 @@ function MapSF() {
   // Data point onClick
   const onClick = (info: any) => {
     if (info.object) {
-      alert(info.object.properties.Name); // TODO: remove this
+      // TODO: Display additional insights potentially
     }
-    // TODO: popup code here?
   };
 
   // Data point onHover
+  // TODO: Correct this useCallback usage - getting warnings about poor usage
   const debouncedOnHover = useCallback(
     debounce((info: any) => {
       if (info.object) {
@@ -199,7 +197,7 @@ function MapSF() {
         newTotalGeoJsonPoints,
       } = result;
       console.log("result");
-      // Update state or perform other actions based on the fetched data
+      // Update states based on query results - data handling present in set functions
       setTotalIncidents(newTotalIncidents);
       setIncidentMap(newIncidentMap);
       setIncidentCategoryMap(newIncidentCategoryMap);
@@ -207,6 +205,8 @@ function MapSF() {
     }
   }
 
+  // Added debounced version of viewStateChange
+  // TODO: Correct this useCallback usage - getting warnings about poor usage
   const debouncedViewStateChange = useCallback(
     debounce((e: any) => {
       const { viewState } = e;
