@@ -13,6 +13,9 @@ This project lacks additional README files, as default npm start/build/other com
     - The dataset also technically contains roughly a million incidents at the time of writing so the limit was set to a clean 1,000,000.
 - App sluggish with a large number of incidents on screen (This likely varies by system, but has also been noted to vary by browser Opera vs Chrome - did not do much browser testing to narrow down reasoning but assumed to be intentional resource limitation by Opera).
     - The MapSF component remounts when moving the map, which contributes a lot to the degradation in responsiveness. Making optimizations to account for this or correct it should help performance, if not fix it altogether.
+ 
+## Feature TODO
+- Need to implement some form of spinner to indicate query in-progress. Ideally map would still be interactable until the query is complete.
 
 ## Author
 - [James Dawson Horn](https://github.com/jhorn00)
