@@ -1,4 +1,4 @@
-# FinanceDashboard
+# SFPD
 Police incident report visualization for San Francisco Police Department dataset.
 
 `This project was created as a homework assignment.`  
