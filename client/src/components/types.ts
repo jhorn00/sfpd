@@ -10,14 +10,17 @@ mapboxgl.workerClass =
   require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default; // eslint-disable-line import/no-webpack-loader-syntax, import/no-unresolved
 ////////////////////////////////////////////////////////////////////////////////////
 
+// Map of incident categories to incidents from the query
 export type IncidentMap = Map<string, IncidentType[]>;
 
+// Interface to store necessary fields for a single insight bar graph
 export interface BarGraphFields {
     title: string;
     dates: Array<string>;
     occurrances: Array<number>;
 }
 
+// Interface to store GeoJSON dataPoint
 export interface GeoJsonPoint {
     type: "Feature";
     geometry: {
@@ -28,7 +31,7 @@ export interface GeoJsonPoint {
 }
 
 // Incident data in order from csv export
-// Not technically necessary but just wanted to more clearly define incident fields
+// Not technically necessary but wanted to more clearly define incident fields
 export interface IncidentType {
     incident_datetime: string;
     incident_date: string;
@@ -67,13 +70,16 @@ export interface IncidentType {
     current_police_districts?: string;
 }
 
+// Interface to sore the selected map style - needs a label for UI and value for endpoint
 export interface MapStyleOption {
     label: string;
     value: string;
 }
 
+// Interface to map incident categories from query to a bool for toggle status
 export type IncidentCategoryMap = Map<string, boolean>;
-  
+
+// Interface to define props shared between parent component MapSF and child component Menu
 export interface MenuProps {
     mapStyleOptions: MapStyleOption[];
     mapStyle: string;
