@@ -11,7 +11,7 @@ export const MAP_STYLE_OPTIONS = [ // Menu map style options
   { label: "Streets", value: "streets-v12" },
   { label: "Satellite", value: "satellite-streets-v12" },
 ];
-export const INITIAL_VIEW_STATE = { // Initial view/camera posistion of map - contents self-explanatory
+export const INITIAL_VIEW_STATE = { // Initial view/camera posistion of map
   latitude: 37.773972,
   longitude: -122.431297,
   zoom: 12,
@@ -19,8 +19,8 @@ export const INITIAL_VIEW_STATE = { // Initial view/camera posistion of map - co
   pitch: 0,
 };
 export const BOUNDS = [
-  [-122.531297, 37.673972], // Southwest-most coordinates
-  [-122.331297, 37.873972], // Northeast-most coordinates
+  [-122.531297, 37.673972], // Southwest-most coordinates - long, lat
+  [-122.331297, 37.873972], // Northeast-most coordinates - long, lat
 ];
 export const MIN_ZOOM = 10; // Minimum zoom set by author
 export const MAX_ZOOM = 20; // Maximum zoom as defined by Mapbox (determined via testing)
