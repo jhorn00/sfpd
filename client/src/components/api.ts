@@ -30,7 +30,7 @@ export async function makeSocrataCall(
       params: {
         $$app_token: SOCRATA_ACCESS_TOKEN,
         $limit: queryLimit,
-        // incident_code: "07041",
+        // incident_code: "07041", // TODO: Consider usage of incident code or other field for use in query
         $where: `incident_date >= '${startDateISO}' AND incident_date <= '${endDateISO}'`,
       },
     });
@@ -50,16 +50,16 @@ export async function makeSocrataCall(
     const newTotalIncidents = populateIncidentList(data); // Update query results
 
     // Update incidentMap
-    const newIncidentMap: IncidentMap = populateIncidentMap(newTotalIncidents); // use local object because state might not be updated
+    const newIncidentMap: IncidentMap = populateIncidentMap(newTotalIncidents); // Use local object because state might not be updated
 
     // Update incidentCategoryList menu options
-    const incidentCategoryStrings = Array.from(newIncidentMap.keys()); // use local object because state might not be updated
+    const incidentCategoryStrings = Array.from(newIncidentMap.keys()); // Use local object because state might not be updated
     const newIncidentCategoryMap: IncidentCategoryMap =
       populateIncidentCategoryMap(incidentCategoryStrings);
     console.log(newIncidentCategoryMap);
 
     // Convert the response data to GeoJSON objects
-    // use local object because state might not be updated
+    // Use local object because state might not be updated
     const newTotalGeoJsonPoints: GeoJsonPoint[] = newTotalIncidents.map(
       (incident: IncidentType) => ({
         type: "Feature",
