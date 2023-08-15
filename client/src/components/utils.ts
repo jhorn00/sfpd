@@ -1,3 +1,4 @@
+// Import required types
 import {
   BarGraphFields,
   GeoJsonPoint,
@@ -6,6 +7,7 @@ import {
   IncidentType,
 } from "./types";
 
+// Adjust start and end date objects to match user timezone
 export function adjustDate(targetDate: string): Date {
   const originalDate = new Date(targetDate);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -15,6 +17,7 @@ export function adjustDate(targetDate: string): Date {
   return localDate;
 }
 
+// Based on the current dataPoints state, generate insight bar graph fields
 export function generateBarGraphFields(
   dataPoints: GeoJsonPoint[]
 ): BarGraphFields {
@@ -68,6 +71,7 @@ export function generateBarGraphFields(
   };
 }
 
+// Narrow down response data into elements having lat and long (type string)
 export function populateIncidentList(data: any[]): IncidentType[] {
   const validCoordinatesData = data.filter(
     (item: any) =>
@@ -77,6 +81,7 @@ export function populateIncidentList(data: any[]): IncidentType[] {
       typeof item.longitude === "string"
   );
 
+  // Narrow down response data into elements having lat and long that are parsable
   return validCoordinatesData
     .map((incident: any) => {
       const {
@@ -150,7 +155,6 @@ export function populateIncidentList(data: any[]): IncidentType[] {
         neighborhoods,
         current_supervisor_districts,
         current_police_districts,
-        // ... other properties ...
       };
     })
     .filter(
@@ -158,6 +162,7 @@ export function populateIncidentList(data: any[]): IncidentType[] {
     ) as IncidentType[];
 }
 
+// Filter different incident types into color groups
 export function getColorCode(
   category: string
 ): [number, number, number, number] {
@@ -206,7 +211,7 @@ export function getColorCode(
 
     case "human trafficking (a), commercial sex acts":
     case "human trafficking, commercial sex acts":
-      return [255, 0, 0, 250];
+      return [255, 0, 0, 250]; // Red
 
     // Miscellaneous Crimes
     case "civil sidewalks":
@@ -253,6 +258,7 @@ export function getColorCode(
   }
 }
 
+// Translate IncidentType array into a map with keys of incident category strings
 export function populateIncidentMap(incidents: IncidentType[]) {
   const incidentMap: IncidentMap = new window.Map();
   incidents.forEach((incident) => {
@@ -266,6 +272,7 @@ export function populateIncidentMap(incidents: IncidentType[]) {
   return incidentMap;
 }
 
+// Translate list of incident category strings into a map to track toggle status
 export function populateIncidentCategoryMap(incidentCategoryStrings: string[]) {
   const incidentCategoryMap: IncidentCategoryMap = new window.Map();
   incidentCategoryStrings.forEach((key) => {
